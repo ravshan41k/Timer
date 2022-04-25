@@ -1,0 +1,67 @@
+﻿@model IEnumerable<Timer.Models.TimeData>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="text-center">
+    <div class="text-center">
+        <h1>History Timer </h1>
+
+    </div>
+
+
+
+    <table class="table table-bordered border-primary">
+        <thead>
+            <tr>
+                <th>
+                    №
+                </th>
+                <th>
+                    Timer Name
+                </th>
+                <th>
+                    Start time
+                </th>
+                <th>
+                    Finish time
+                </th>
+
+
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Id)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.TimerName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.StartDate)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.FinishDate)
+                    </td>
+
+
+                    <td>
+                        <partial name="_TableEditPartial" model="item.Id" />
+
+
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div>
+        <a asp-controller="TimeDatas" asp-action="Create" type="submit" class="btn btn-primary float-right">Back</a>
+    </div>
+   
+</div>

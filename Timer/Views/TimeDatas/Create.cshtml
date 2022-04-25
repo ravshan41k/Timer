@@ -1,0 +1,211 @@
+﻿@model Timer.Models.TimeData
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div>
+
+    <button class="btn btn-primary" id="myBtn"> Edit</button>
+     <a asp-controller="TimeDatas" asp-action="Index" type="submit"  class="btn btn-danger float-right">History</a>
+    <div class="timeCount">
+        <div class="toolbox">
+            <span id="Timer">
+            </span>
+            <button id="start" class="btn">start</button>
+            <button id="reset" type="button" class="btn">Reset</button>
+        </div>
+    </div>
+
+    <div class="progressbarWrapper">
+        <span id="greenBar"></span>
+    </div>
+
+    <table class="table table-hover" style="margin-top:50px;">
+        <thead>
+           
+        </thead>
+        <tbody>
+            <tr>
+                
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+    <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:20px 50px;">
+                    <h4><span class="glyphicon glyphicon-lock"></span> Edit Timer</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body " style="padding:40px 50px;">
+                    <form role="form"  class="large">
+                        <div class="form-group">
+                            <label style="margin-left:15px;" for="name">Timer Name:</label>
+                            <input class="Tname" id="nameTimer" type="text" placeholder="Timer name" value="timer" required />
+                        </div><br />
+                        <div class="form-group two fl">
+                            <input class="label" type="number" min="0" value="0" id="soat" /><br />
+                            <label for="soat">Hours</label>
+                        </div>
+                        <div class="form-group two fl">
+                            <input class="label" type="number" min="0" max="59" value="0" id="minut" /><br />
+                            <label for="minut">Minut</label>
+                        </div>
+                        <div class="form-group two fl">
+                            <input class="label" type="number" value="0" min="0" max="59" id="sekund" /><br />
+                            <label for="sekund">Secund</label>
+                        </div>
+                        <button id="done" type="submit" class="btn btn-success btn-block " data-dismiss="modal"><span class="glyphicon glyphicon-off text-center">Done</span></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    @section Scripts {
+
+
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+        <script>
+
+            var Paused = false;
+            var soat1 = 0;
+            var minut1 = 3;
+            var sekund1 = 0;
+            var soat;
+            var minut;
+            var sekund;
+            var timeTotal = soat1 * 3600 + minut1 * 60 + sekund1;
+            var Left = timeTotal;
+            let elem = document.getElementById("greenBar");
+            let stepValue = 1;
+            let startTime = (soat1 < 10 ? ("0" + soat1) : soat1) + ":" + (minut1 < 10 ? ("0" + minut1) : minut1) + ":" + (sekund1 < 10 ? ("0" + sekund1) : sekund1);
+            let endTime;
+            $("#done").on('click', function () {
+                soat1 = $("#soat").val();
+                minut1 = $("#minut").val();
+                sekund1 = $("#sekund").val();
+               
+                    soat = soat1;
+                    minut = minut1;
+                    sekund = sekund1;
+           
+                startTime = (soat < 10 ? ("0" + soat) : soat) + ":" + (minut < 10 ? ("0" + minut) : minut) + ":" + (sekund < 10 ? ("0" + sekund) : sekund);
+                timeTotal = soat1 * 3600 + minut1 * 60 + sekund1;
+                $("#Timer").text("");
+                $("#Timer").text((soat < 10 ? ("0" + soat) : soat) + ":" + (minut < 10 ? ("0" + minut) : minut) + ":" + (sekund < 10 ? ("0" + sekund) : sekund));
+
+
+            });
+
+            let count=1;
+
+            $("#reset").on('click', function () {
+                $("#start").prop('disabled', false);
+                $("#reset").prop('hidden', true);
+                soat = soat1;
+                minut = minut1;
+                sekund = sekund1;
+                stepValue = 1;
+                Paused = !Paused;
+                elem.style.width = (100) + "%";
+                $("#Timer").text("");
+                $("#Timer").text((soat < 10 ? ("0" + soat) : soat) + ":" + (minut < 10 ? ("0" + minut) : minut) + ":" + (sekund < 10 ? ("0" + sekund) : sekund));
+
+                markup = "<tr><td>"+count+"</td><td>"+$("#nameTimer").val()+count+"</td><td>"+startTime+"</td><td>"+endTime+"</td></tr>";
+                tableBody = $("table tbody");
+                tableBody.append(markup);
+                count++;
+                $.ajax(
+                    {
+                        type: "POST",  
+                        url: "TimeDatas/Create", 
+                        data: {
+                            StartDate: startTime,
+                            FinishDate: endTime,
+                            TimerName: ($("#nameTimer").val() + count)
+                        }
+
+                    });
+               });
+
+
+
+            $("#myBtn").on('click', function () {
+                $("#myModal").modal();
+            });
+
+            $(document).ready(function () {
+                soat = soat1;
+                minut = minut1;
+                sekund = sekund1;
+                $("#Timer").text((soat < 10 ? ("0" + soat) : soat) + ":" + (minut < 10 ? ("0" + minut) : minut) + ":" + (sekund < 10 ? ("0" + sekund) : sekund));
+                $("#reset").prop('hidden', true);
+            });
+          
+            $("#start").on('click', function () {
+
+                Paused = !Paused;
+                $("#start").text((!Paused) ? "Start" : "Stop");
+                $("#reset").prop('hidden', Paused);
+
+                if (Paused) {
+
+                  bar = setInterval(function () {
+                        if (stepValue > timeTotal) {
+                            clearInterval(bar);
+                        }
+                        else {
+                         elem.style.width = (100-(stepValue*100 / timeTotal)) + "%";
+                          stepValue = (stepValue + 1);
+                        }
+                  }, 1000);
+
+                   my = setInterval(function () {
+
+                        if (sekund == 0) {
+                            if (minut == 0) {
+                                if (soat == 0) {
+                                    clearInterval(my);
+                                   
+                                    $("#start").text("Start");
+                                    $("#start").prop('disabled', true);
+                                   
+                                    $("#reset").prop('hidden', false);
+                                }
+                                else {
+                                    soat--;
+                                    minut = 59;
+                                    sekund = 59;
+
+                                }
+                            }
+                            else {
+                                minut--;
+                                sekund = 59;
+                            }
+                        }
+                        else {
+                            sekund--;
+                            console.log(soat + minut + sekund);
+                        }
+
+                        endTime = (soat < 10 ? ("0" + soat) : soat) + ":" + (minut < 10 ? ("0" + minut) : minut) + ":" + (sekund < 10 ? ("0" + sekund) : sekund);
+                        $("#Timer").text((soat < 10 ? ("0" + soat) : soat) + ":" + (minut < 10 ? ("0" + minut) : minut) + ":" + (sekund < 10 ? ("0" + sekund) : sekund));
+                    }, 1000);
+                }
+                else {
+                    clearInterval(my);
+                    clearInterval(bar);
+                }
+            });
+           
+        </script>
+    }
